@@ -149,4 +149,39 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // ----------------------------------------------------
+  // 4. VIDEO LAZY LOADING (Core Web Vitals Speedup)
+  // ----------------------------------------------------
+  const tourVideo = document.getElementById('tour-video');
+  if (tourVideo) {
+    if ('IntersectionObserver' in window) {
+      const videoObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const videoElement = entry.target;
+            const sourceElement = videoElement.querySelector('source');
+            if (sourceElement && !sourceElement.src) {
+              sourceElement.src = videoElement.dataset.src;
+              videoElement.load();
+              videoElement.play().catch((err) => {
+                console.log('Video autoplay deferred or blocked:', err);
+              });
+            }
+            videoObserver.unobserve(videoElement);
+          }
+        });
+      }, {
+        rootMargin: '100px' // Start loading 100px before the video enters the viewport
+      });
+      videoObserver.observe(tourVideo);
+    } else {
+      // Fallback: load immediately if IntersectionObserver is not supported
+      const sourceElement = tourVideo.querySelector('source');
+      if (sourceElement) {
+        sourceElement.src = tourVideo.dataset.src;
+        tourVideo.load();
+      }
+    }
+  }
 });
